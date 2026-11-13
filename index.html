@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CyberShield - Network Security</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🛡️ CyberShield</h1>
+        <p>NETWORK INTRUSION DETECTION SYSTEM</p>
+        <span class="security-status">● SYSTEM ACTIVE</span>
+    </header>
+
+    <h2>📊 Security Dashboard</h2>
+
+    <div class="stats-container">
+
+        <div class="stat-card">
+            <h3>Total Traffic</h3>
+            <h1>{{ total }}</h1>
+            <p>Analyzed Requests</p>
+        </div>
+
+        <div class="stat-card safe-card">
+            <h3>Safe Traffic</h3>
+            <h1>{{ safe }}</h1>
+            <p>Normal Requests</p>
+        </div>
+
+        <div class="stat-card danger-card">
+            <h3>Malicious Traffic</h3>
+            <h1>{{ malicious }}</h1>
+            <p>Suspicious Requests</p>
+        </div>
+
+    </div>
+
+    <h2>🔍 Traffic Analysis</h2>
+
+    <form method="POST" id="trafficForm">
+
+        <textarea
+            name="input_text"
+            id="inputText"
+            placeholder="Enter network traffic data here..."
+            required></textarea>
+
+        <br><br>
+
+        <button type="submit">⚡ Analyze Traffic</button>
+
+    </form>
+
+    <h2>🚨 Traffic Detection History</h2>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Network Traffic</th>
+                    <th>Status</th>
+                    <th>Attack Type</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for record in records %}
+
+                <tr>
+                    <td>{{ record[0] }}</td>
+
+                    <td>{{ record[1] }}</td>
+
+                    <td class="{{ 'safe' if record[2] == 'Safe' else 'malicious' }}">
+                        {{ record[2] }}
+                    </td>
+
+                    <td>{{ record[3] }}</td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="4">No traffic records available.</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <footer>
+        <p>🔒 CyberShield | Network Security Monitoring System</p>
+        <p>Powered by Python Flask & SQLite</p>
+    </footer>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
