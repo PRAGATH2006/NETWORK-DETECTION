@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import re
+import os
 
 app = Flask(__name__)
 
+DATABASE = os.path.join(os.path.dirname(__file__), "traffic.db")
 
-# Database Creation
+
 def create_database():
-
-    conn = sqlite3.connect("traffic.db")
+    conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -24,16 +25,15 @@ def create_database():
     conn.close()
 
 
-# Attack Detection
+
+create_database()
+
 def detect_attack(text):
 
     patterns = {
         "SQL Injection": r"(\bOR\b\s+['\"]?1['\"]?\s*=\s*['\"]?1|UNION\s+SELECT|DROP\s+TABLE)",
-
         "XSS": r"<script.*?>.*?</script>",
-
         "Path Traversal": r"\.\./|\.\.\\",
-
         "Command Injection": r";\s*(whoami|ls|dir|cat|ping)"
     }
 
@@ -45,7 +45,6 @@ def detect_attack(text):
     return "Safe", "None"
 
 
-# Home Page
 @app.route("/", methods=["GET", "POST"])
 def home():
 
@@ -55,7 +54,7 @@ def home():
 
         status, attack_type = detect_attack(input_text)
 
-        conn = sqlite3.connect("traffic.db")
+        conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
 
         cursor.execute(
@@ -71,24 +70,21 @@ def home():
 
         return redirect("/")
 
-    # Fetch Traffic Records
-    conn = sqlite3.connect("traffic.db")
+    conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM traffic ORDER BY id DESC")
     records = cursor.fetchall()
 
-    # Total Traffic
     cursor.execute("SELECT COUNT(*) FROM traffic")
     total = cursor.fetchone()[0]
 
-    # Safe Traffic
+
     cursor.execute(
         "SELECT COUNT(*) FROM traffic WHERE status='Safe'"
     )
     safe = cursor.fetchone()[0]
 
-    # Malicious Traffic
     cursor.execute(
         "SELECT COUNT(*) FROM traffic WHERE status='Malicious'"
     )
@@ -104,10 +100,5 @@ def home():
         malicious=malicious
     )
 
-
-# Run Application
 if __name__ == "__main__":
-
-    create_database()
-
     app.run(debug=True)
