@@ -1,32 +1,35 @@
+
 from flask import Flask, render_template, request, redirect
-import sqlite3
+from pymongo import MongoClient
+from dotenv import load_dotenv
 import re
 import os
 
 app = Flask(__name__)
+load_dotenv()
 
-DATABASE = os.path.join(os.path.dirname(__file__), "traffic.db")
+MONGO_URI = os.getenv("MONGO_URI")
 
+if not MONGO_URI:
+    raise ValueError("MONGO_URI is missing in .env file")
 
-def create_database():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
+client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=10000
+)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS traffic (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            input_text TEXT,
-            status TEXT,
-            attack_type TEXT
-        )
-    """)
-
-    conn.commit()
-    conn.close()
+db = client["network_detection"]
+traffic_collection = db["traffic"]
 
 
 
-create_database()
+try:
+    client.admin.command("ping")
+    print("MongoDB Atlas Connected Successfully!")
+except Exception as e:
+    print("MongoDB Connection Error:", e)
+
+
 
 def detect_attack(text):
 
@@ -54,43 +57,52 @@ def home():
 
         status, attack_type = detect_attack(input_text)
 
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
+        try:
+            
+            traffic_collection.insert_one({
+                "input_text": input_text,
+                "status": status,
+                "attack_type": attack_type
+            })
 
-        cursor.execute(
-            """
-            INSERT INTO traffic (input_text, status, attack_type)
-            VALUES (?, ?, ?)
-            """,
-            (input_text, status, attack_type)
-        )
+            print("Traffic saved successfully!")
 
-        conn.commit()
-        conn.close()
+        except Exception as e:
+            print("MongoDB Insert Error:", e)
 
         return redirect("/")
 
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
+    try:
+        documents = list(
+            traffic_collection.find().sort("_id", -1)
+        )
 
-    cursor.execute("SELECT * FROM traffic ORDER BY id DESC")
-    records = cursor.fetchall()
+        records = [
+            (
+                str(doc["_id"]),
+                doc.get("input_text", ""),
+                doc.get("status", ""),
+                doc.get("attack_type", "")
+            )
+            for doc in documents
+        ]
 
-    cursor.execute("SELECT COUNT(*) FROM traffic")
-    total = cursor.fetchone()[0]
+        total = traffic_collection.count_documents({})
 
+        safe = traffic_collection.count_documents({
+            "status": "Safe"
+        })
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM traffic WHERE status='Safe'"
-    )
-    safe = cursor.fetchone()[0]
+        malicious = traffic_collection.count_documents({
+            "status": "Malicious"
+        })
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM traffic WHERE status='Malicious'"
-    )
-    malicious = cursor.fetchone()[0]
-
-    conn.close()
+    except Exception as e:
+        print("MongoDB Fetch Error:", e)
+        records = []
+        total = 0
+        safe = 0
+        malicious = 0
 
     return render_template(
         "index.html",
@@ -100,5 +112,6 @@ def home():
         malicious=malicious
     )
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
