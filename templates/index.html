@@ -1,14 +1,48 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>CyberShield - Network Security</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="static/style.css">
+
+    <style>
+        form {
+            margin-top: 20px;
+        }
+
+        textarea {
+            margin-bottom: 18px;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.6;
+        }
+
+        .result-safe {
+            display: block !important;
+            background: #123528;
+            color: #4ade80;
+        }
+
+        .result-danger {
+            display: block !important;
+            background: #451e2b;
+            color: #fb7185;
+        }
+
+        .status-label {
+            display: inline-block;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,104 +50,198 @@
 <div class="container">
 
     <header>
-        <h1>🛡️ CyberShield</h1>
+        <h1>CyberShield</h1>
         <p>NETWORK INTRUSION DETECTION SYSTEM</p>
-        <span class="security-status">● SYSTEM ACTIVE</span>
+        <span class="security-status status-label">
+            ● Security Monitoring Active
+        </span>
     </header>
 
-    <h2>📊 Security Dashboard</h2>
+    <h2>Network Traffic Overview</h2>
 
     <div class="stats-container">
 
         <div class="stat-card">
             <h3>Total Traffic</h3>
-            <h1>{{ total }}</h1>
-            <p>Analyzed Requests</p>
+            <h1 id="total">0</h1>
+            <p>Total analyzed requests</p>
         </div>
 
         <div class="stat-card safe-card">
             <h3>Safe Traffic</h3>
-            <h1>{{ safe }}</h1>
-            <p>Normal Requests</p>
+            <h1 id="safe">0</h1>
+            <p>Normal network requests</p>
         </div>
 
         <div class="stat-card danger-card">
             <h3>Malicious Traffic</h3>
-            <h1>{{ malicious }}</h1>
-            <p>Suspicious Requests</p>
+            <h1 id="malicious">0</h1>
+            <p>Detected attack requests</p>
         </div>
 
     </div>
 
-    <h2>🔍 Traffic Analysis</h2>
+    <h2>Analyze Network Traffic</h2>
 
-    <form action="/dashboard" method="POST" id="trafficForm">
+    <form id="trafficForm">
 
         <textarea
-            name="input_text"
-            id="inputText"
-            placeholder="Enter network traffic data here..."
-            required></textarea>
+            id="input_text"
+            placeholder="Enter network traffic or suspicious input here..."
+            required
+        ></textarea>
 
-        <br><br>
-
-        <button type="submit">⚡ Analyze Traffic</button>
+        <button type="submit">Analyze Traffic</button>
 
     </form>
 
-    <h2>🚨 Traffic Detection History</h2>
+    <div id="result"></div>
+
+    <h2>Recent Traffic Records</h2>
 
     <div class="table-container">
 
         <table>
-
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Network Traffic</th>
+                    <th>Input Traffic</th>
                     <th>Status</th>
                     <th>Attack Type</th>
                 </tr>
             </thead>
 
-            <tbody>
-
-                {% for record in records %}
-
+            <tbody id="records">
                 <tr>
-                    <td>{{ record[0] }}</td>
-
-                    <td>{{ record[1] }}</td>
-
-                    <td class="{{ 'safe' if record[2] == 'Safe' else 'malicious' }}">
-                        {{ record[2] }}
-                    </td>
-
-                    <td>{{ record[3] }}</td>
+                    <td colspan="3">Loading traffic records...</td>
                 </tr>
-
-                {% else %}
-
-                <tr>
-                    <td colspan="4">No traffic records available.</td>
-                </tr>
-
-                {% endfor %}
-
             </tbody>
-
         </table>
 
     </div>
 
     <footer>
-        <p>🔒 CyberShield | Network Security Monitoring System</p>
-        <p>Powered by Python Flask & MongoDB Atlas</p>
+        <p>CyberShield - Network Intrusion Detection System</p>
+        <p>Powered by Python Flask, MongoDB Atlas & Regular Expressions</p>
+        <p>© 2026 CyberShield | All Rights Reserved</p>
     </footer>
 
 </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+
+    // Render backend URL will be added in the next step
+    const API_URL = "YOUR_RENDER_BACKEND_URL";
+
+    async function loadTraffic() {
+
+        try {
+
+            const response = await fetch(API_URL + "/api/traffic");
+
+            if (!response.ok) {
+                throw new Error("Backend error");
+            }
+
+            const data = await response.json();
+
+            document.getElementById("total").textContent = data.total;
+            document.getElementById("safe").textContent = data.safe;
+            document.getElementById("malicious").textContent = data.malicious;
+
+            const records = document.getElementById("records");
+            records.innerHTML = "";
+
+            if (!data.records || data.records.length === 0) {
+                records.innerHTML =
+                    '<tr><td colspan="3">No traffic records found</td></tr>';
+                return;
+            }
+
+            data.records.forEach(record => {
+
+                const row = document.createElement("tr");
+
+                const inputCell = document.createElement("td");
+                inputCell.textContent = record.input_text;
+
+                const statusCell = document.createElement("td");
+                statusCell.textContent = record.status;
+                statusCell.className =
+                    record.status === "Safe" ? "safe" : "malicious";
+
+                const attackCell = document.createElement("td");
+                attackCell.textContent = record.attack_type;
+
+                row.appendChild(inputCell);
+                row.appendChild(statusCell);
+                row.appendChild(attackCell);
+
+                records.appendChild(row);
+
+            });
+
+        } catch (error) {
+
+            document.getElementById("records").innerHTML =
+                '<tr><td colspan="3">Unable to connect to backend</td></tr>';
+
+        }
+
+    }
+
+    document.getElementById("trafficForm").addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            const input = document.getElementById("input_text").value.trim();
+            const result = document.getElementById("result");
+
+            if (!input) return;
+
+            try {
+
+                const response = await fetch(API_URL + "/api/traffic", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        input_text: input
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Analysis failed");
+                }
+
+                result.textContent =
+                    "Status: " + data.status +
+                    " | Attack Type: " + data.attack_type;
+
+                result.className =
+                    data.status === "Safe" ? "result-safe" : "result-danger";
+
+                document.getElementById("input_text").value = "";
+
+                await loadTraffic();
+
+            } catch (error) {
+
+                result.textContent = "Backend connection failed. Please try again.";
+                result.className = "result-danger";
+
+            }
+
+        }
+    );
+
+    loadTraffic();
+
+</script>
 
 </body>
 </html>
