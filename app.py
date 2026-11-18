@@ -6,12 +6,14 @@ import re
 import os
 
 app = Flask(__name__)
+
+# Load MongoDB Atlas connection
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 
 if not MONGO_URI:
-    raise ValueError("MONGO_URI is missing in .env file")
+    raise ValueError("MONGO_URI is missing")
 
 client = MongoClient(
     MONGO_URI,
@@ -21,8 +23,7 @@ client = MongoClient(
 db = client["network_detection"]
 traffic_collection = db["traffic"]
 
-
-
+# Check MongoDB connection
 try:
     client.admin.command("ping")
     print("MongoDB Atlas Connected Successfully!")
@@ -30,7 +31,7 @@ except Exception as e:
     print("MongoDB Connection Error:", e)
 
 
-
+# Detect malicious traffic
 def detect_attack(text):
 
     patterns = {
@@ -42,13 +43,20 @@ def detect_attack(text):
 
     for attack, pattern in patterns.items():
 
-        if re.search(pattern, text, re.IGNORECASE):
+        if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
             return "Malicious", attack
 
     return "Safe", "None"
 
 
-@app.route("/", methods=["GET", "POST"])
+# Render backend status message
+@app.route("/")
+def backend_status():
+    return "Network Intrusion Detection Backend is Running Successfully!"
+
+
+# Full dashboard
+@app.route("/dashboard", methods=["GET", "POST"])
 def home():
 
     if request.method == "POST":
@@ -58,7 +66,6 @@ def home():
         status, attack_type = detect_attack(input_text)
 
         try:
-            
             traffic_collection.insert_one({
                 "input_text": input_text,
                 "status": status,
@@ -70,9 +77,10 @@ def home():
         except Exception as e:
             print("MongoDB Insert Error:", e)
 
-        return redirect("/")
+        return redirect("/dashboard")
 
     try:
+
         documents = list(
             traffic_collection.find().sort("_id", -1)
         )
@@ -88,17 +96,17 @@ def home():
         ]
 
         total = traffic_collection.count_documents({})
-
         safe = traffic_collection.count_documents({
             "status": "Safe"
         })
-
         malicious = traffic_collection.count_documents({
             "status": "Malicious"
         })
 
     except Exception as e:
+
         print("MongoDB Fetch Error:", e)
+
         records = []
         total = 0
         safe = 0
