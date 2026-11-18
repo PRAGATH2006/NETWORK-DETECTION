@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield - Network Security</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>CyberShield</h1>
+        <p>Network Intrusion Detection System</p>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Traffic</h3>
+                <h2 id="total">0</h2>
+            </div>
+            <div class="stat-card">
+                <h3>Safe Traffic</h3>
+                <h2 id="safe">0</h2>
+            </div>
+            <div class="stat-card">
+                <h3>Malicious Traffic</h3>
+                <h2 id="malicious">0</h2>
+            </div>
+        </div>
+
+        <h2>Analyze Network Traffic</h2>
+
+        <form id="trafficForm">
+            <textarea id="input_text" placeholder="Enter network traffic..." required></textarea>
+            <button type="submit">Analyze Traffic</button>
+        </form>
+
+        <p id="result"></p>
+
+        <h2>Traffic Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Input</th>
+                    <th>Status</th>
+                    <th>Attack Type</th>
+                </tr>
+            </thead>
+            <tbody id="records">
+                <tr>
+                    <td colspan="3">Loading traffic records...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Replace this URL with your Render backend URL
+        const API_URL = "YOUR_RENDER_BACKEND_URL";
+
+        async function loadTraffic() {
+            try {
+                const response = await fetch(API_URL + "/api/traffic");
+                const data = await response.json();
+
+                document.getElementById("total").textContent = data.total;
+                document.getElementById("safe").textContent = data.safe;
+                document.getElementById("malicious").textContent = data.malicious;
+
+                const records = document.getElementById("records");
+                records.innerHTML = "";
+
+                if (!data.records || data.records.length === 0) {
+                    records.innerHTML = '<tr><td colspan="3">No traffic records found</td></tr>';
+                    return;
+                }
+
+                data.records.forEach(record => {
+                    const row = document.createElement("tr");
+
+                    [record.input_text, record.status, record.attack_type].forEach(value => {
+                        const cell = document.createElement("td");
+                        cell.textContent = value;
+                        row.appendChild(cell);
+                    });
+
+                    records.appendChild(row);
+                });
+            } catch (error) {
+                document.getElementById("result").textContent =
+                    "Unable to connect to backend. Please check the API URL.";
+            }
+        }
+
+        document.getElementById("trafficForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const input = document.getElementById("input_text").value;
+
+            try {
+                const response = await fetch(API_URL + "/api/traffic", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ input_text: input })
+                });
+
+                const data = await response.json();
+
+                document.getElementById("result").textContent =
+                    "Status: " + data.status + " | Attack: " + data.attack_type;
+
+                document.getElementById("input_text").value = "";
+                loadTraffic();
+            } catch (error) {
+                document.getElementById("result").textContent =
+                    "Backend connection failed.";
+            }
+        });
+
+        loadTraffic();
+    </script>
+</body>
+</html>
