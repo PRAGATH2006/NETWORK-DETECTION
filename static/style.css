@@ -8,7 +8,7 @@
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #080d1b;
-    color: #ffffff;
+    color: white;
     padding: 0 20px;
     min-height: 100vh;
 }
@@ -34,9 +34,8 @@ header {
 header h1 {
     color: #38bdf8;
     font-size: 44px;
-    font-weight: 800;
+    font-weight: bold;
     margin-bottom: 12px;
-    letter-spacing: 1px;
 }
 
 header p {
@@ -50,22 +49,20 @@ header p {
     display: inline-block;
     color: #4ade80;
     background: #123528;
-    border: 1px solid #205c42;
     padding: 10px 20px;
     border-radius: 25px;
     font-size: 13px;
 }
 
-/* SECTION HEADINGS */
+/* HEADINGS */
 
 h2 {
     color: #60a5fa;
     font-size: 24px;
     margin: 32px 0 20px;
-    font-weight: 700;
 }
 
-/* STATISTICS CARDS */
+/* DASHBOARD CARDS */
 
 .stats-container {
     display: grid;
@@ -78,8 +75,8 @@ h2 {
     padding: 28px;
     border-radius: 13px;
     border: 1px solid #334b70;
-    transition: 0.3s ease;
     min-height: 175px;
+    transition: 0.3s;
 }
 
 .stat-card:hover {
@@ -122,10 +119,6 @@ h2 {
 
 /* TRAFFIC INPUT */
 
-form {
-    margin-top: 20px;
-}
-
 textarea {
     width: 100%;
     height: 125px;
@@ -149,7 +142,7 @@ textarea:focus {
     box-shadow: 0 0 12px #0ea5e955;
 }
 
-/* ANALYZE BUTTON */
+/* BUTTON */
 
 button {
     background: linear-gradient(110deg, #2563eb, #9333ea);
@@ -160,8 +153,8 @@ button {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
     margin-top: 22px;
+    transition: 0.3s;
 }
 
 button:hover {
@@ -175,10 +168,9 @@ button:hover {
     margin-top: 18px;
     padding: 14px;
     border-radius: 9px;
-    line-height: 1.6;
 }
 
-/* TRAFFIC HISTORY TABLE */
+/* TRAFFIC TABLE */
 
 .table-container {
     width: 100%;
@@ -190,8 +182,6 @@ table {
     width: 100%;
     margin-top: 20px;
     border-collapse: collapse;
-    border-radius: 10px;
-    overflow: hidden;
 }
 
 th {
@@ -199,7 +189,7 @@ th {
     color: #7dd3fc;
     padding: 17px 14px;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: bold;
     text-align: center;
 }
 
@@ -236,10 +226,9 @@ footer {
     border-top: 1px solid #263859;
     color: #94a3b8;
     line-height: 2;
-    font-size: 13px;
 }
 
-/* RESPONSIVE */
+/* MOBILE */
 
 @media (max-width: 768px) {
     body {
