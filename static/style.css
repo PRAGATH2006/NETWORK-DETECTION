@@ -34,7 +34,7 @@ header {
 header h1 {
     color: #38bdf8;
     font-size: 44px;
-    font-weight: bold;
+    font-weight: 800;
     margin-bottom: 12px;
 }
 
@@ -54,7 +54,7 @@ header p {
     font-size: 13px;
 }
 
-/* HEADINGS */
+/* SECTION HEADINGS */
 
 h2 {
     color: #60a5fa;
@@ -65,9 +65,10 @@ h2 {
 /* DASHBOARD CARDS */
 
 .stats-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 20px;
+    width: 100%;
 }
 
 .stat-card {
@@ -77,6 +78,7 @@ h2 {
     border: 1px solid #334b70;
     min-height: 175px;
     transition: 0.3s;
+    width: 100%;
 }
 
 .stat-card:hover {
@@ -118,6 +120,10 @@ h2 {
 }
 
 /* TRAFFIC INPUT */
+
+form {
+    margin-top: 20px;
+}
 
 textarea {
     width: 100%;
@@ -165,9 +171,23 @@ button:hover {
 /* RESULT */
 
 #result {
-    margin-top: 18px;
-    padding: 14px;
-    border-radius: 9px;
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+    line-height: 1.6;
+}
+
+.result-safe {
+    display: block !important;
+    background: #123528;
+    color: #4ade80;
+}
+
+.result-danger {
+    display: block !important;
+    background: #451e2b;
+    color: #fb7185;
 }
 
 /* TRAFFIC TABLE */
@@ -228,7 +248,7 @@ footer {
     line-height: 2;
 }
 
-/* MOBILE */
+/* RESPONSIVE */
 
 @media (max-width: 768px) {
     body {
@@ -249,7 +269,7 @@ footer {
     }
 
     .stats-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
 
     .stat-card {
